@@ -1,0 +1,23 @@
+# Xcode / build artifacts
+build/
+DerivedData/
+*.xcarchive
+*.ipa
+*.dSYM.zip
+*.xcuserstate
+xcuserdata/
+
+# macOS
+.DS_Store
+
+# Playwright / screenshots scratch
+.playwright-mcp/
+asc-*.png
+
+# Secrets (never commit signing keys)
+*.p8
+*.mobileprovision
+ExportOptions.plist
+
+# Local signing helper (contains account identifiers)
+scripts/make_profile.py
