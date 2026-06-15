@@ -23,7 +23,7 @@ struct ProfileView: View {
         VStack(spacing: 20) {
             VStack(spacing: 12) {
                 AvatarView(url: user.avatarUrl, initials: user.initials, size: 88)
-                Text(user.fullName).font(.title2.bold())
+                Text(user.fullName).font(.title2.bold()).foregroundStyle(Theme.ink)
                 Text(user.email).font(.subheadline).foregroundStyle(Theme.mutedInk)
                 Pill(text: user.role.capitalized, filled: true)
             }
@@ -57,7 +57,7 @@ struct ProfileView: View {
         VStack(spacing: 18) {
             BrandMark().padding(.top, 40)
             Text("Home-cooked meals,\nmade with love.")
-                .font(.title3.weight(.semibold)).multilineTextAlignment(.center)
+                .font(.title3.weight(.semibold)).foregroundStyle(Theme.ink).multilineTextAlignment(.center)
             Text("Sign in to book unique dining experiences with talented home chefs across Singapore.")
                 .font(.subheadline).foregroundStyle(Theme.mutedInk)
                 .multilineTextAlignment(.center).padding(.horizontal, 24)

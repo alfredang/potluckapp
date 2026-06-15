@@ -96,11 +96,11 @@ struct StateView: View {
                 ProgressView().controlSize(.large).tint(Theme.terracotta)
             case .empty:
                 Image(systemName: "tray").font(.largeTitle).foregroundStyle(Theme.mutedInk)
-                Text(title).font(.headline)
+                Text(title).font(.headline).foregroundStyle(Theme.ink)
                 if !message.isEmpty { Text(message).font(.subheadline).foregroundStyle(Theme.mutedInk).multilineTextAlignment(.center) }
             case .error:
                 Image(systemName: "exclamationmark.triangle").font(.largeTitle).foregroundStyle(Theme.terracotta)
-                Text(title.isEmpty ? "Something went wrong" : title).font(.headline)
+                Text(title.isEmpty ? "Something went wrong" : title).font(.headline).foregroundStyle(Theme.ink)
                 if !message.isEmpty { Text(message).font(.subheadline).foregroundStyle(Theme.mutedInk).multilineTextAlignment(.center) }
                 if let retry {
                     Button("Try Again", action: retry)

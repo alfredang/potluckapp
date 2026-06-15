@@ -97,7 +97,7 @@ struct DishDetailView: View {
                 RemoteImage(url: m.firstImage)
                     .frame(height: 260).frame(maxWidth: .infinity).clipped()
                 VStack(alignment: .leading, spacing: 14) {
-                    Text(m.name).font(.title2.bold())
+                    Text(m.name).font(.title2.bold()).foregroundStyle(Theme.ink)
                     HStack {
                         Text(m.displayPrice).font(.title3.bold()).foregroundStyle(Theme.terracotta)
                         Spacer()

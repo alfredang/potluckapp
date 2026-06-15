@@ -46,7 +46,7 @@ struct BookingsView: View {
     private var signedOut: some View {
         VStack(spacing: 16) {
             Image(systemName: "calendar.badge.clock").font(.system(size: 56)).foregroundStyle(Theme.golden)
-            Text("Track your dining plans").font(.title3.bold())
+            Text("Track your dining plans").font(.title3.bold()).foregroundStyle(Theme.ink)
             Text("Sign in to view and manage your bookings with home chefs.")
                 .font(.subheadline).foregroundStyle(Theme.mutedInk).multilineTextAlignment(.center)
             Button("Sign In") { showLogin = true }.buttonStyle(PrimaryButton()).padding(.horizontal, 40)
@@ -57,7 +57,7 @@ struct BookingsView: View {
     private var emptyState: some View {
         VStack(spacing: 14) {
             Image(systemName: "fork.knife.circle").font(.system(size: 56)).foregroundStyle(Theme.golden)
-            Text("No bookings yet").font(.title3.bold())
+            Text("No bookings yet").font(.title3.bold()).foregroundStyle(Theme.ink)
             Text("Explore home chefs and request your first dining experience.")
                 .font(.subheadline).foregroundStyle(Theme.mutedInk).multilineTextAlignment(.center)
         }

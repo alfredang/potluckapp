@@ -134,7 +134,7 @@ struct SectionHeader: View {
     var subtitle: String? = nil
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.title3.bold())
+            Text(title).font(.title3.bold()).foregroundStyle(Theme.ink)
             if let subtitle { Text(subtitle).font(.subheadline).foregroundStyle(Theme.mutedInk) }
         }
         .padding(.horizontal)
