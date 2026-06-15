@@ -15,6 +15,7 @@ struct ProfileView: View {
             }
             .background(Theme.background)
             .navigationTitle("Profile")
+            .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showLogin) { AuthSheet() }
         }
     }

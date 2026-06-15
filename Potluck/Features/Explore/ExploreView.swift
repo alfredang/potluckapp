@@ -54,6 +54,7 @@ struct ExploreView: View {
             }
             .background(Theme.background)
             .navigationTitle("Explore")
+            .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $model.search, prompt: "Search home chefs")
             .onSubmit(of: .search) { Task { await model.applyFilters() } }
         }

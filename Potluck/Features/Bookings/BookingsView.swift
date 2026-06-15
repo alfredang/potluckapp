@@ -38,6 +38,7 @@ struct BookingsView: View {
             }
             .background(Theme.background)
             .navigationTitle("Bookings")
+            .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showLogin) { AuthSheet() }
         }
         .task(id: auth.isLoggedIn) { if auth.isLoggedIn { await model.load() } }

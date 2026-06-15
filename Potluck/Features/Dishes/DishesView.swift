@@ -38,6 +38,7 @@ struct DishesView: View {
             }
             .background(Theme.background)
             .navigationTitle("Dishes")
+            .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $model.search, prompt: "Search dishes")
             .onSubmit(of: .search) { Task { await model.load() } }
             .navigationDestination(for: Menu.self) { DishDetailView(menu: $0) }
