@@ -4,14 +4,22 @@
 [![SwiftUI](https://img.shields.io/badge/SwiftUI-iOS%2017+-0A84FF?style=flat-square&logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
 [![Xcode](https://img.shields.io/badge/Xcode-26-1575F9?style=flat-square&logo=xcode&logoColor=white)](https://developer.apple.com/xcode/)
 [![Platform](https://img.shields.io/badge/Platform-iPhone-lightgrey?style=flat-square&logo=apple)](https://www.apple.com/iphone/)
-[![App Store](https://img.shields.io/badge/App%20Store-Submitted-0D96F6?style=flat-square&logo=app-store)](https://apps.apple.com/)
+[![App Store](https://img.shields.io/badge/App%20Store-Download-0D96F6?style=flat-square&logo=app-store&logoColor=white)](https://apps.apple.com/app/id6759842391)
 
-The native **SwiftUI** iPhone app for [**Potluck**](https://potluckhub.io) — a Singapore
-marketplace connecting home chefs with food lovers. Discover talented local cooks, browse
-their menus, and book authentic home-cooked dining experiences.
+The native **SwiftUI** iPhone app for [**Potluck**](https://potluckhub.io/) — the Singapore
+**home-cook marketplace** at [potluckhub.io](https://potluckhub.io/) connecting home chefs with
+food lovers. Discover talented local cooks, browse their menus, and book authentic
+home-cooked dining experiences.
 
-> Companion to the [Potluck web platform](https://github.com/alfredang/potluck). This app
-> talks directly to the production Potluck API (`api.potluckhub.io`) — no mock data.
+### 📲 [Download on the App Store](https://apps.apple.com/app/id6759842391)
+
+> Companion to the [Potluck web platform](https://github.com/alfredang/potluck) — the home-cook
+> marketplace site [potluckhub.io](https://potluckhub.io/). This app talks directly to the
+> production Potluck API (`api.potluckhub.io`) — no mock data.
+
+## On the App Store
+
+[![PotLuckHub on the App Store](screenshots/appstore.png)](https://apps.apple.com/app/id6759842391)
 
 ## Screenshots
 
