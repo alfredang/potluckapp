@@ -21,3 +21,8 @@ ExportOptions.plist
 
 # Local signing helper (contains account identifiers)
 scripts/make_profile.py
+
+# Local Claude skills (contain project credentials; shared sanitized via alfredang/skills)
+.claude/
+__pycache__/
+mm-iphone.png

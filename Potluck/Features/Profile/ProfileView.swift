@@ -3,6 +3,8 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject private var auth: AuthManager
     @State private var showLogin = false
+    @State private var showDeleteConfirm = false
+    @State private var deleteError: String?
 
     var body: some View {
         NavigationStack {
@@ -17,6 +19,31 @@ struct ProfileView: View {
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showLogin) { AuthSheet() }
+            .confirmationDialog(
+                "Delete Account",
+                isPresented: $showDeleteConfirm,
+                titleVisibility: .visible
+            ) {
+                Button("Delete My Account", role: .destructive) { deleteAccount() }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This permanently deletes your Potluck account and personal data. Transaction records required by law are retained, then purged. This cannot be undone.")
+            }
+            .alert("Couldn't delete account", isPresented: .constant(deleteError != nil)) {
+                Button("OK") { deleteError = nil }
+            } message: {
+                Text(deleteError ?? "")
+            }
+        }
+    }
+
+    private func deleteAccount() {
+        Task {
+            do {
+                try await auth.deleteAccount()
+            } catch {
+                deleteError = error.localizedDescription
+            }
         }
     }
 
@@ -48,6 +75,20 @@ struct ProfileView: View {
             .background(Color.white).foregroundStyle(Theme.terracotta)
             .clipShape(RoundedRectangle(cornerRadius: 14))
             .padding(.horizontal)
+
+            Button { showDeleteConfirm = true } label: {
+                HStack(spacing: 6) {
+                    if auth.isWorking { ProgressView().tint(.red) }
+                    Text("Delete Account")
+                }
+                .frame(maxWidth: .infinity).padding(.vertical, 14)
+            }
+            .disabled(auth.isWorking)
+            .foregroundStyle(.red)
+            .padding(.horizontal)
+
+            Text("Permanently deletes your account and data.")
+                .font(.caption2).foregroundStyle(Theme.mutedInk)
 
             Text("Potluck v1.0").font(.caption2).foregroundStyle(Theme.mutedInk).padding(.top, 8)
         }

@@ -66,6 +66,12 @@ enum PotluckService {
         try await api.send("GET", "auth/me", authenticated: true, as: User.self)
     }
 
+    /// Permanently deletes the signed-in user's account (App Store Guideline 5.1.1(v)).
+    static func deleteAccount() async throws {
+        struct Empty: Decodable {}
+        _ = try await api.send("DELETE", "auth/account", authenticated: true, as: Empty.self)
+    }
+
     // Bookings
     static func myBookings() async throws -> [Booking] {
         try await api.send("GET", "bookings", authenticated: true, as: [Booking].self)

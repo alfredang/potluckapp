@@ -8,7 +8,7 @@ options:
 settings:
   base:
     MARKETING_VERSION: "1.0"
-    CURRENT_PROJECT_VERSION: "20260616"
+    CURRENT_PROJECT_VERSION: "20260617"
     DEVELOPMENT_TEAM: GU9WTSTX9M
     SWIFT_VERSION: "5.0"
     SWIFT_STRICT_CONCURRENCY: minimal
@@ -33,7 +33,7 @@ targets:
       properties:
         CFBundleDisplayName: Potluck
         CFBundleShortVersionString: "1.0"
-        CFBundleVersion: "20260616"
+        CFBundleVersion: "20260617"
         ITSAppUsesNonExemptEncryption: false
         UILaunchScreen:
           UIColorName: LaunchBackground

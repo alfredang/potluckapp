@@ -39,6 +39,14 @@ final class AuthManager: ObservableObject {
         persist(result)
     }
 
+    /// Permanently deletes the account on the server, then clears the local session.
+    func deleteAccount() async throws {
+        isWorking = true
+        defer { isWorking = false }
+        try await PotluckService.deleteAccount()
+        signOut()
+    }
+
     func signOut() {
         Keychain.delete(accessKey)
         Keychain.delete(refreshKey)
