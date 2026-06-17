@@ -42,6 +42,8 @@ struct BookingsView: View {
             .sheet(isPresented: $showLogin) { AuthSheet() }
         }
         .task(id: auth.isLoggedIn) { if auth.isLoggedIn { await model.load() } }
+        // Refresh on reopen so a just-made booking appears immediately.
+        .onAppear { if auth.isLoggedIn { Task { await model.load() } } }
     }
 
     private var signedOut: some View {
@@ -59,7 +61,7 @@ struct BookingsView: View {
         VStack(spacing: 14) {
             Image(systemName: "fork.knife.circle").font(.system(size: 56)).foregroundStyle(Theme.golden)
             Text("No bookings yet").font(.title3.bold()).foregroundStyle(Theme.ink)
-            Text("Explore home chefs and request your first dining experience.")
+            Text("Find a home chef and book your first makan — a seat at their table or a private dinner at yours.")
                 .font(.subheadline).foregroundStyle(Theme.mutedInk).multilineTextAlignment(.center)
         }
         .padding(32)

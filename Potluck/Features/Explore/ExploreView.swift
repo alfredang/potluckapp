@@ -39,6 +39,7 @@ final class ExploreModel: ObservableObject {
 struct ExploreView: View {
     @StateObject private var model = ExploreModel()
     @State private var path = NavigationPath()
+    @State private var didLoad = false
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -59,16 +60,19 @@ struct ExploreView: View {
             .onSubmit(of: .search) { Task { await model.applyFilters() } }
         }
         .task {
-            if model.chefs.isEmpty { await model.load() }
+            if !didLoad { didLoad = true; await model.load() }
             if ScreenshotConfig.openFirstChef, let first = model.featured.first ?? model.chefs.first {
                 path.append(first)
             }
         }
+        // Re-pull live data whenever the tab is reopened so new chefs/menus show immediately.
+        .onAppear { if didLoad { Task { await model.load() } } }
     }
 
     private var content: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
+                ExploreHero()
                 cuisineFilter
 
                 if !model.featured.isEmpty {
@@ -127,6 +131,49 @@ struct ExploreView: View {
             }
             .padding(.horizontal)
         }
+    }
+}
+
+/// Branded hero mirroring potluckhub.io — tagline + trust badges.
+struct ExploreHero: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Home-cooked meals,\nfrom real Singapore kitchens.")
+                    .font(.title2.bold())
+                    .foregroundStyle(Theme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("Discover talented home chefs in your neighbourhood. Book a seat at their table — or have them cook a private dinner at yours.")
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.mutedInk)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    TrustBadge(icon: "checkmark.seal.fill", text: "Identity-verified chefs")
+                    TrustBadge(icon: "leaf.fill", text: "Halal & dietary-friendly")
+                    TrustBadge(icon: "lock.shield.fill", text: "Secure SGD payments")
+                }
+            }
+        }
+        .padding(.horizontal)
+    }
+}
+
+/// Small icon + label chip used in the Explore hero trust strip.
+struct TrustBadge: View {
+    let icon: String
+    let text: String
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon).font(.caption).foregroundStyle(Theme.teal)
+            Text(text).font(.caption.weight(.medium)).foregroundStyle(Theme.ink)
+        }
+        .padding(.horizontal, 12).padding(.vertical, 8)
+        .background(Color.white)
+        .clipShape(Capsule())
+        .shadow(color: Theme.cardShadow, radius: 4, y: 2)
     }
 }
 

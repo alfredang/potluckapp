@@ -28,24 +28,33 @@ struct ChefDetailView: View {
     @State private var bookingMenu: Menu?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                header
-                if case .error(let msg) = model.phase, model.chef == nil {
-                    StateView(kind: .error, message: msg) { Task { await model.load(id: chefId) } }
-                        .frame(height: 300)
-                } else {
-                    body(for: model.chef ?? preview)
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    header
+                    if case .error(let msg) = model.phase, model.chef == nil {
+                        StateView(kind: .error, message: msg) { Task { await model.load(id: chefId) } }
+                            .frame(height: 300)
+                    } else {
+                        body(for: model.chef ?? preview)
+                    }
+                }
+                .padding(.bottom, 32)
+            }
+            .background(Theme.background)
+            .safeAreaInset(edge: .bottom) {
+                if let menus = displayChef?.menus, !menus.isEmpty {
+                    BookingBar(title: "See the menu", systemImage: "fork.knife") {
+                        withAnimation { proxy.scrollTo("menu", anchor: .top) }
+                    }
                 }
             }
-            .padding(.bottom, 32)
-        }
-        .background(Theme.background)
-        .navigationBarTitleDisplayMode(.inline)
-        .task { await model.load(id: chefId) }
-        .sheet(item: $bookingMenu) { menu in
-            if let chef = model.chef ?? preview {
-                BookingRequestView(chef: chef, menu: menu)
+            .navigationBarTitleDisplayMode(.inline)
+            .task { await model.load(id: chefId) }
+            .sheet(item: $bookingMenu) { menu in
+                if let chef = model.chef ?? preview {
+                    BookingRequestView(chef: chef, menu: menu)
+                }
             }
         }
     }
@@ -109,7 +118,7 @@ struct ChefDetailView: View {
                 }
 
                 if let menus = chef.menus, !menus.isEmpty {
-                    SectionHeader(title: "Menu")
+                    SectionHeader(title: "Menu", subtitle: "Tap Book to reserve a dish").id("menu")
                     VStack(spacing: 12) {
                         ForEach(menus) { menu in
                             MenuRow(menu: menu) { bookingMenu = menu }
@@ -118,8 +127,9 @@ struct ChefDetailView: View {
                 }
 
                 if !model.reviews.isEmpty {
-                    SectionHeader(title: "Reviews", subtitle: "\(model.reviews.count) verified diners")
+                    SectionHeader(title: "Reviews", subtitle: "What diners are saying")
                     VStack(spacing: 12) {
+                        RatingSummary(rating: chef.rating, count: chef.reviewCount)
                         ForEach(model.reviews.prefix(8)) { ReviewCard(review: $0) }
                     }.padding(.horizontal)
                 }
@@ -163,26 +173,48 @@ struct MenuRow: View {
 
 struct ReviewCard: View {
     let review: Review
+    var showMenuName = true
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
+            HStack(alignment: .top) {
                 AvatarView(url: review.customer?.avatarUrl,
                            initials: initials(review.customer?.fullName ?? "P"), size: 36)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(review.customer?.fullName ?? "Diner").font(.subheadline.weight(.semibold))
-                    if let m = review.menu?.name { Text(m).font(.caption).foregroundStyle(Theme.mutedInk) }
+                    if showMenuName, let m = review.menu?.name {
+                        Text(m).font(.caption).foregroundStyle(Theme.mutedInk)
+                    }
                 }
                 Spacer()
-                HStack(spacing: 2) {
-                    ForEach(0..<5) { i in
-                        Image(systemName: i < review.rating ? "star.fill" : "star")
-                            .font(.caption2).foregroundStyle(Theme.golden)
+                VStack(alignment: .trailing, spacing: 3) {
+                    HStack(spacing: 2) {
+                        ForEach(0..<5) { i in
+                            Image(systemName: i < review.rating ? "star.fill" : "star")
+                                .font(.caption2).foregroundStyle(Theme.golden)
+                        }
+                    }
+                    if let date = Self.formatted(review.createdAt) {
+                        Text(date).font(.caption2).foregroundStyle(Theme.mutedInk)
                     }
                 }
             }
             if let title = review.title { Text(title).font(.subheadline.weight(.semibold)) }
             if let comment = review.comment {
                 Text(comment).font(.subheadline).foregroundStyle(Theme.ink)
+            }
+            if let reply = review.chefResponse, !reply.isEmpty {
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "arrowshape.turn.up.left.fill")
+                        .font(.caption2).foregroundStyle(Theme.teal)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Chef's reply").font(.caption.weight(.semibold)).foregroundStyle(Theme.teal)
+                        Text(reply).font(.caption).foregroundStyle(Theme.ink)
+                    }
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Theme.teal.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
         }
         .padding(14)
@@ -191,5 +223,47 @@ struct ReviewCard: View {
 
     private func initials(_ name: String) -> String {
         name.split(separator: " ").prefix(2).compactMap { $0.first.map(String.init) }.joined().uppercased()
+    }
+
+    /// Formats an ISO-8601 timestamp to a short "Mon YYYY" label for review cards.
+    static func formatted(_ iso: String?) -> String? {
+        guard let iso else { return nil }
+        let parser = ISO8601DateFormatter()
+        parser.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let date = parser.date(from: iso) ?? {
+            let f = ISO8601DateFormatter(); f.formatOptions = [.withInternetDateTime]
+            return f.date(from: iso)
+        }()
+        guard let date else { return nil }
+        let out = DateFormatter()
+        out.dateFormat = "MMM yyyy"
+        return out.string(from: date)
+    }
+}
+
+/// Compact average-rating summary shown atop a reviews section.
+struct RatingSummary: View {
+    let rating: Double
+    let count: Int
+    var body: some View {
+        HStack(spacing: 12) {
+            VStack(spacing: 0) {
+                Text(String(format: "%.1f", rating)).font(.title.bold()).foregroundStyle(Theme.ink)
+                HStack(spacing: 2) {
+                    ForEach(0..<5) { i in
+                        Image(systemName: Double(i) < rating.rounded() ? "star.fill" : "star")
+                            .font(.caption2).foregroundStyle(Theme.golden)
+                    }
+                }
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text("\(count) verified \(count == 1 ? "review" : "reviews")")
+                    .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+                Text("From diners who've eaten here").font(.caption).foregroundStyle(Theme.mutedInk)
+            }
+            Spacer()
+        }
+        .padding(14)
+        .potluckCard()
     }
 }

@@ -24,6 +24,7 @@ final class DishesModel: ObservableObject {
 
 struct DishesView: View {
     @StateObject private var model = DishesModel()
+    @State private var didLoad = false
 
     let columns = [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)]
 
@@ -43,7 +44,9 @@ struct DishesView: View {
             .onSubmit(of: .search) { Task { await model.load() } }
             .navigationDestination(for: Menu.self) { DishDetailView(menu: $0) }
         }
-        .task { if model.menus.isEmpty { await model.load() } }
+        .task { if !didLoad { didLoad = true; await model.load() } }
+        // Re-pull live data whenever the tab is reopened so newly published dishes show immediately.
+        .onAppear { if didLoad { Task { await model.load() } } }
     }
 
     private var grid: some View {
@@ -88,6 +91,7 @@ struct DishCard: View {
 struct DishDetailView: View {
     let menu: Menu
     @State private var full: Menu?
+    @State private var reviews: [Review] = []
     @State private var showBooking = false
 
     private var m: Menu { full ?? menu }
@@ -119,16 +123,35 @@ struct DishDetailView: View {
                             Spacer()
                         }
                     }
-                    Button("Request This Dish") { showBooking = true }
-                        .buttonStyle(PrimaryButton()).padding(.top, 4)
+
+                    if !reviews.isEmpty {
+                        Divider()
+                        HStack {
+                            Text("Diner reviews").font(.headline).foregroundStyle(Theme.ink)
+                            Spacer()
+                            RatingLabel(rating: m.rating, count: reviews.count)
+                        }
+                        VStack(spacing: 12) {
+                            ForEach(reviews.prefix(5)) { ReviewCard(review: $0, showMenuName: false) }
+                        }
+                    }
                 }
                 .padding()
             }
             .padding(.bottom, 24)
         }
         .background(Theme.background)
+        .safeAreaInset(edge: .bottom) {
+            BookingBar(price: m.displayPrice, title: "Request This Dish") { showBooking = true }
+        }
         .navigationBarTitleDisplayMode(.inline)
-        .task { full = try? await PotluckService.menu(id: menu.id) }
+        .task {
+            full = try? await PotluckService.menu(id: menu.id)
+            if let chefId = m.chefId ?? m.chef?.id {
+                let all = (try? await PotluckService.chefReviews(chefId: chefId)) ?? []
+                reviews = all.filter { $0.menu?.id == menu.id }
+            }
+        }
         .sheet(isPresented: $showBooking) {
             if let chefUser = m.chef?.user, let chefId = m.chef?.id {
                 BookingRequestView(

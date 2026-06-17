@@ -25,22 +25,22 @@ enum ScreenshotConfig {
     static var openFirstChef: Bool { env("POTLUCK_OPEN_CHEF") == "1" }
 }
 
-/// Cuisine categories shown as quick filters (slugs match the API `category` param).
+/// Cuisine categories shown as quick filters. Slugs match the API menu `category` param
+/// (the eight categories the backend actually serves). Ordered Singapore-local first.
 enum Cuisine: String, CaseIterable, Identifiable {
-    case chinese, western, thai, japanese, korean, malay, indian, halal, vegetarian
+    case malay, chinese, indian, halal, vegetarian, japanese, korean, western
     var id: String { rawValue }
     var label: String { rawValue.capitalized }
     var emoji: String {
         switch self {
+        case .malay: return "🍛"      // nasi lemak, rendang
         case .chinese: return "🥟"
-        case .western: return "🍝"
-        case .thai: return "🍜"
-        case .japanese: return "🍱"
-        case .korean: return "🍲"
-        case .malay: return "🍛"
-        case .indian: return "🍛"
+        case .indian: return "🫓"     // roti prata
         case .halal: return "🥘"
         case .vegetarian: return "🥗"
+        case .japanese: return "🍱"
+        case .korean: return "🍜"
+        case .western: return "🍝"
         }
     }
 }

@@ -98,14 +98,41 @@ struct ProfileView: View {
     private var signedOut: some View {
         VStack(spacing: 18) {
             BrandMark().padding(.top, 40)
-            Text("Home-cooked meals,\nmade with love.")
+            Text("Home-cooked meals,\nfrom real Singapore kitchens.")
                 .font(.title3.weight(.semibold)).foregroundStyle(Theme.ink).multilineTextAlignment(.center)
-            Text("Sign in to book unique dining experiences with talented home chefs across Singapore.")
+            Text("From Peranakan feasts in Joo Chiat to nasi lemak in Geylang Serai — book a seat at a home chef's table, or have them cook a private dinner at yours.")
                 .font(.subheadline).foregroundStyle(Theme.mutedInk)
                 .multilineTextAlignment(.center).padding(.horizontal, 24)
             Button("Sign In or Register") { showLogin = true }
                 .buttonStyle(PrimaryButton()).padding(.horizontal, 40).padding(.top, 8)
+
+            VStack(spacing: 0) {
+                howItWorksRow("1", "magnifyingglass", "Discover",
+                              "Browse home chefs by cuisine, neighbourhood and date.")
+                Divider().padding(.leading, 52)
+                howItWorksRow("2", "calendar", "Book",
+                              "Pick your date, menu and party size. Pay securely in SGD.")
+                Divider().padding(.leading, 52)
+                howItWorksRow("3", "fork.knife", "Makan",
+                              "Pull up a chair at the chef's table for a proper home-cooked spread.")
+            }
+            .potluckCard()
+            .padding(.horizontal)
+            .padding(.top, 8)
         }
+    }
+
+    private func howItWorksRow(_ number: String, _ icon: String, _ title: String, _ detail: String) -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: icon).foregroundStyle(Theme.terracotta).frame(width: 24)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("\(number). \(title)").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+                Text(detail).font(.caption).foregroundStyle(Theme.mutedInk)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(16)
     }
 
     private func settingsRow(_ icon: String, _ title: String) -> some View {

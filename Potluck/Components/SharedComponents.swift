@@ -113,6 +113,35 @@ struct StateView: View {
     }
 }
 
+/// Pinned bottom action bar that keeps the primary booking CTA reachable without scrolling.
+struct BookingBar: View {
+    var price: String? = nil
+    let title: String
+    var systemImage: String? = nil
+    var action: () -> Void
+
+    var body: some View {
+        HStack(spacing: 14) {
+            if let price {
+                Text(price).font(.title3.bold()).foregroundStyle(Theme.terracotta)
+            }
+            Button(action: action) {
+                if let systemImage {
+                    Label(title, systemImage: systemImage)
+                } else {
+                    Text(title)
+                }
+            }
+            .buttonStyle(PrimaryButton())
+        }
+        .padding(.horizontal)
+        .padding(.top, 10)
+        .padding(.bottom, 8)
+        .background(.ultraThinMaterial)
+        .overlay(Divider(), alignment: .top)
+    }
+}
+
 /// Primary call-to-action button style.
 struct PrimaryButton: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {

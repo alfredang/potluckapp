@@ -32,6 +32,10 @@ final class APIClient {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 20
         config.waitsForConnectivity = true
+        // Always hit the live marketplace — never serve a stale cached response. A chef's
+        // newly published menu / updated availability must appear on the app immediately.
+        config.requestCachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+        config.urlCache = nil
         self.session = URLSession(configuration: config)
     }
 

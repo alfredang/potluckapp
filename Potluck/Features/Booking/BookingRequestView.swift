@@ -70,8 +70,9 @@ struct BookingRequestView: View {
                 }
                 .buttonStyle(PrimaryButton())
 
-                Text("You won't be charged until the chef confirms your booking.")
+                Text("Pay securely in SGD — held until the chef confirms. No deposit drama.")
                     .font(.caption).foregroundStyle(Theme.mutedInk)
+                    .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity, alignment: .center)
             }
             .padding()
