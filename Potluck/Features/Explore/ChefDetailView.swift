@@ -4,28 +4,45 @@ import SwiftUI
 final class ChefDetailModel: ObservableObject {
     @Published var chef: Chef?
     @Published var reviews: [Review] = []
+    @Published var reviewTotal = 0
+    @Published var reviewAverage: Double = 0
     @Published var phase: Phase = .loading
     enum Phase { case loading, loaded, error(String) }
 
     func load(id: String) async {
         phase = .loading
         do {
+            // Reviews come from the potluckhub.io website API (same origin as checkout).
             async let chef = PotluckService.chef(id: id)
-            async let reviews = PotluckService.chefReviews(chefId: id)
+            async let reviews = ReviewsService.reviews(chefId: id)
             self.chef = try await chef
-            self.reviews = (try? await reviews) ?? []
+            if let response = try? await reviews {
+                self.reviews = response.reviews.map(\.asReview)
+                self.reviewTotal = response.total
+                self.reviewAverage = response.average
+            }
             phase = .loaded
         } catch {
             phase = .error((error as? APIError)?.errorDescription ?? error.localizedDescription)
         }
+    }
+
+    /// Shows a freshly submitted review at the top of the list.
+    func prepend(_ review: WebReview) {
+        reviews.insert(review.asReview, at: 0)
+        reviewTotal += 1
     }
 }
 
 struct ChefDetailView: View {
     let chefId: String
     let preview: Chef?
+    @EnvironmentObject private var auth: AuthManager
     @StateObject private var model = ChefDetailModel()
     @State private var bookingMenu: Menu?
+    @State private var showWriteReview = false
+    @State private var showLogin = false
+    @State private var showThankYou = false
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -50,36 +67,70 @@ struct ChefDetailView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    ShareLink(item: shareText) {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                }
+            }
             .task { await model.load(id: chefId) }
             .sheet(item: $bookingMenu) { menu in
                 if let chef = model.chef ?? preview {
                     BookingRequestView(chef: chef, menu: menu)
                 }
             }
+            .sheet(isPresented: $showWriteReview) {
+                if let chef = displayChef {
+                    WriteReviewView(chef: chef) { review in
+                        model.prepend(review)
+                        showThankYou = true
+                        Task {
+                            try? await Task.sleep(for: .seconds(3))
+                            showThankYou = false
+                        }
+                    }
+                }
+            }
+            .sheet(isPresented: $showLogin) { AuthSheet() }
         }
+    }
+
+    /// Share sheet text — chef name + first specialty (or "Singapore") + site link.
+    private var shareText: String {
+        let name = displayChef?.user.fullName ?? "a home chef"
+        let flavour = displayChef?.displaySpecialties.first ?? "Singapore"
+        return "Check out \(name) — home-cooked \(flavour) on Potluck 🍲 https://potluckhub.io"
     }
 
     private var displayChef: Chef? { model.chef ?? preview }
 
     private var header: some View {
-        ZStack(alignment: .bottomLeading) {
-            RemoteImage(url: displayChef?.user.avatarUrl)
-                .frame(height: 240).frame(maxWidth: .infinity).clipped()
-            LinearGradient(colors: [.clear, .black.opacity(0.55)], startPoint: .center, endPoint: .bottom)
-                .frame(height: 240)
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    Text(displayChef?.user.fullName ?? "Chef").font(.title.bold()).foregroundStyle(.white)
-                    if displayChef?.isVerified == true {
-                        Image(systemName: "checkmark.seal.fill").foregroundStyle(.white)
+        VStack(alignment: .leading, spacing: 0) {
+            ZStack(alignment: .bottomLeading) {
+                RemoteImage(url: displayChef?.user.avatarUrl)
+                    .frame(height: 240).frame(maxWidth: .infinity).clipped()
+                LinearGradient(colors: [.clear, .black.opacity(0.55)], startPoint: .center, endPoint: .bottom)
+                    .frame(height: 240)
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text(displayChef?.user.fullName ?? "Chef").font(.title.bold()).foregroundStyle(.white)
+                        if displayChef?.isVerified == true {
+                            VerifiedPill(onPhoto: true)
+                        }
+                    }
+                    if let city = displayChef?.city {
+                        Label(city, systemImage: "mappin.and.ellipse")
+                            .font(.subheadline).foregroundStyle(.white.opacity(0.9))
                     }
                 }
-                if let city = displayChef?.city {
-                    Label(city, systemImage: "mappin.and.ellipse")
-                        .font(.subheadline).foregroundStyle(.white.opacity(0.9))
-                }
+                .padding()
             }
-            .padding()
+            if displayChef?.isVerified == true {
+                Label("Identity & kitchen verified by Potluck (site visit)", systemImage: "checkmark.seal.fill")
+                    .font(.caption).foregroundStyle(Theme.teal)
+                    .padding(.horizontal).padding(.top, 10)
+            }
         }
     }
 
@@ -126,13 +177,40 @@ struct ChefDetailView: View {
                     }.padding(.horizontal)
                 }
 
-                if !model.reviews.isEmpty {
-                    SectionHeader(title: "Reviews", subtitle: "What diners are saying")
-                    VStack(spacing: 12) {
-                        RatingSummary(rating: chef.rating, count: chef.reviewCount)
+                SectionHeader(title: "Reviews", subtitle: "What diners are saying")
+                VStack(spacing: 12) {
+                    Button {
+                        if auth.isLoggedIn { showWriteReview = true } else { showLogin = true }
+                    } label: {
+                        Label("Write a Review", systemImage: "square.and.pencil")
+                    }
+                    .buttonStyle(PrimaryButton())
+
+                    if showThankYou {
+                        Label("Thanks for your review!", systemImage: "checkmark.circle.fill")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Theme.teal)
+                            .frame(maxWidth: .infinity)
+                            .padding(12)
+                            .background(Theme.teal.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .transition(.opacity)
+                    }
+
+                    if !model.reviews.isEmpty {
+                        RatingSummary(
+                            rating: model.reviewAverage > 0 ? model.reviewAverage : chef.rating,
+                            count: model.reviewTotal > 0 ? model.reviewTotal : model.reviews.count
+                        )
                         ForEach(model.reviews.prefix(8)) { ReviewCard(review: $0) }
-                    }.padding(.horizontal)
+                    } else {
+                        Text("No reviews yet — be the first to share your experience.")
+                            .font(.subheadline).foregroundStyle(Theme.mutedInk)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
+                .padding(.horizontal)
+                .animation(.default, value: showThankYou)
             }
         } else {
             StateView(kind: .loading).frame(height: 300)

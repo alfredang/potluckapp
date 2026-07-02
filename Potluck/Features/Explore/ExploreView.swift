@@ -4,6 +4,9 @@ import SwiftUI
 final class ExploreModel: ObservableObject {
     @Published var featured: [Chef] = []
     @Published var chefs: [Chef] = []
+    /// Chef ids from the featured API response — used to badge featured chefs
+    /// wherever they appear (e.g. in the all-chefs list).
+    @Published var featuredIds: Set<String> = []
     @Published var search = ""
     @Published var selectedCuisine: Cuisine?
     @Published var phase: LoadPhase = .loading
@@ -17,6 +20,7 @@ final class ExploreModel: ObservableObject {
             async let chefs = PotluckService.chefs(category: selectedCuisine?.rawValue)
             self.featured = try await featured
             self.chefs = try await chefs
+            self.featuredIds = Set(self.featured.map(\.id))
             phase = .loaded
         } catch {
             phase = .error((error as? APIError)?.errorDescription ?? error.localizedDescription)
@@ -91,8 +95,10 @@ struct ExploreView: View {
                 SectionHeader(title: "All Home Chefs", subtitle: "\(model.chefs.count) cooks ready to host")
                 LazyVStack(spacing: 14) {
                     ForEach(model.chefs) { chef in
-                        NavigationLink(value: chef) { ChefRow(chef: chef) }
-                            .buttonStyle(.plain)
+                        NavigationLink(value: chef) {
+                            ChefRow(chef: chef, isFeatured: model.featuredIds.contains(chef.id))
+                        }
+                        .buttonStyle(.plain)
                     }
                     if model.chefs.isEmpty {
                         Text("No chefs match your filters yet.")
@@ -197,13 +203,12 @@ struct FeaturedChefCard: View {
                 .frame(width: 220, height: 140)
                 .clipped()
             VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text(chef.user.fullName).font(.headline).lineLimit(1)
-                    if chef.isVerified == true {
-                        Image(systemName: "checkmark.seal.fill").font(.caption).foregroundStyle(Theme.teal)
-                    }
-                }
+                Text(chef.user.fullName).font(.headline).lineLimit(1)
                 RatingLabel(rating: chef.rating, count: chef.reviewCount)
+                HStack(spacing: 6) {
+                    FeaturedPill()
+                    if chef.isVerified == true { VerifiedPill() }
+                }
                 if let first = chef.displaySpecialties.first {
                     Pill(text: first)
                 }
@@ -219,17 +224,17 @@ struct FeaturedChefCard: View {
 
 struct ChefRow: View {
     let chef: Chef
+    var isFeatured = false
     var body: some View {
         HStack(spacing: 14) {
             RemoteImage(url: chef.user.avatarUrl)
                 .frame(width: 78, height: 78)
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 5) {
-                    Text(chef.user.fullName).font(.headline)
-                    if chef.isVerified == true {
-                        Image(systemName: "checkmark.seal.fill").font(.caption).foregroundStyle(Theme.teal)
-                    }
+                HStack(spacing: 6) {
+                    Text(chef.user.fullName).font(.headline).lineLimit(1)
+                    if chef.isVerified == true { VerifiedPill() }
+                    if isFeatured { FeaturedPill() }
                 }
                 if let bio = chef.bio {
                     Text(bio).font(.caption).foregroundStyle(Theme.mutedInk).lineLimit(2)

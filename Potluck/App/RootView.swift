@@ -26,9 +26,9 @@ enum ScreenshotConfig {
 }
 
 /// Cuisine categories shown as quick filters. Slugs match the API menu `category` param
-/// (the eight categories the backend actually serves). Ordered Singapore-local first.
+/// (the nine canonical FOOD_CATEGORIES the platform serves). Ordered Singapore-local first.
 enum Cuisine: String, CaseIterable, Identifiable {
-    case malay, chinese, indian, halal, vegetarian, japanese, korean, western
+    case malay, chinese, indian, halal, vegetarian, thai, japanese, korean, western
     var id: String { rawValue }
     var label: String { rawValue.capitalized }
     var emoji: String {
@@ -38,6 +38,7 @@ enum Cuisine: String, CaseIterable, Identifiable {
         case .indian: return "🫓"     // roti prata
         case .halal: return "🥘"
         case .vegetarian: return "🥗"
+        case .thai: return "🍲"       // tom yum
         case .japanese: return "🍱"
         case .korean: return "🍜"
         case .western: return "🍝"

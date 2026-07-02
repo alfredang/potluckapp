@@ -20,9 +20,7 @@ enum PotluckService {
         try await api.send("GET", "chefs/\(id)", as: Chef.self)
     }
 
-    static func chefReviews(chefId: String) async throws -> [Review] {
-        try await api.send("GET", "reviews/chef/\(chefId)", as: [Review].self)
-    }
+    // Reviews moved to the potluckhub.io website API — see ReviewsService.
 
     static func chefAvailability(chefId: String) async throws -> [AvailabilitySlot] {
         try await api.send("GET", "chefs/\(chefId)/availability", as: [AvailabilitySlot].self)

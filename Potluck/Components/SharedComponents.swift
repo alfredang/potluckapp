@@ -55,6 +55,36 @@ struct Pill: View {
     }
 }
 
+/// Compact teal "Verified" pill shown wherever a verified chef renders.
+/// Use `onPhoto: true` when placed over imagery (solid white background for contrast).
+struct VerifiedPill: View {
+    var onPhoto = false
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "checkmark.seal.fill").font(.caption2)
+            Text("Verified").font(.caption2.weight(.semibold))
+        }
+        .padding(.horizontal, 8).padding(.vertical, 4)
+        .background(onPhoto ? AnyShapeStyle(Color.white) : AnyShapeStyle(Theme.teal.opacity(0.12)))
+        .foregroundStyle(Theme.teal)
+        .clipShape(Capsule())
+    }
+}
+
+/// Small golden "Featured" pill for chefs in the featured set.
+struct FeaturedPill: View {
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "star.fill").font(.caption2)
+            Text("Featured").font(.caption2.weight(.semibold))
+        }
+        .padding(.horizontal, 8).padding(.vertical, 4)
+        .background(Theme.golden.opacity(0.16))
+        .foregroundStyle(Theme.golden)
+        .clipShape(Capsule())
+    }
+}
+
 struct AvatarView: View {
     let url: String?
     let initials: String

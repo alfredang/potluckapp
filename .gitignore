@@ -26,3 +26,6 @@ scripts/make_profile.py
 .claude/
 __pycache__/
 mm-iphone.png
+
+# Secrets
+.env

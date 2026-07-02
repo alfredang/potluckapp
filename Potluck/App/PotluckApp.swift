@@ -26,6 +26,12 @@ struct PotluckApp: App {
                 .environmentObject(auth)
                 .tint(Theme.terracotta)
                 .task { await auth.restoreSession() }
+                .onOpenURL { url in
+                    // Web checkout success page links back via
+                    // potluck://checkout/result?order={orderId}&status={status}
+                    guard url.scheme == "potluck", url.host == "checkout" else { return }
+                    NotificationCenter.default.post(name: .potluckCheckoutReturn, object: url)
+                }
         }
     }
 }

@@ -7,8 +7,8 @@ options:
   groupSortPosition: top
 settings:
   base:
-    MARKETING_VERSION: "1.1"
-    CURRENT_PROJECT_VERSION: "20260618"
+    MARKETING_VERSION: "1.3"
+    CURRENT_PROJECT_VERSION: "20260703"
     DEVELOPMENT_TEAM: GU9WTSTX9M
     SWIFT_VERSION: "5.0"
     SWIFT_STRICT_CONCURRENCY: minimal
@@ -32,9 +32,13 @@ targets:
       path: Potluck/Info.plist
       properties:
         CFBundleDisplayName: Potluck
-        CFBundleShortVersionString: "1.1"
-        CFBundleVersion: "20260618"
+        CFBundleShortVersionString: "1.3"
+        CFBundleVersion: "20260703"
         ITSAppUsesNonExemptEncryption: false
+        CFBundleURLTypes:
+          - CFBundleURLName: io.potluckhub.app
+            CFBundleURLSchemes:
+              - potluck
         UILaunchScreen:
           UIColorName: LaunchBackground
         UISupportedInterfaceOrientations:

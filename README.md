@@ -31,8 +31,10 @@ home-cooked dining experiences.
 
 - **Explore home chefs** — featured carousel, full directory, search, and nine cuisine filters (Chinese, Western, Thai, Japanese, Korean, Malay, Indian, Halal, Vegetarian)
 - **Browse dishes** — a photo-rich grid of menus across every chef, with prices and ratings
-- **Chef profiles** — bio, specialties, social links, full menu, and verified diner reviews
-- **Booking flow** — pick a date, guest count and special requests with a live price breakdown (incl. service fee)
+- **Verified & Featured chefs** — trust badges backed by Potluck's in-person site-visit verification ([how it works](https://potluckhub.io/chef-verification)), with featured chefs highlighted
+- **Chef profiles** — bio, specialties, social links, full menu, and live guest reviews
+- **Write reviews & share** — rate a chef (1-5 stars), write a review, and share chefs & dishes via the system share sheet
+- **Booking & online payment** — pick a date and guest count, then pay in-app by credit/debit card (Stripe), PayPal, or PayNow (HitPay) through a secure hosted checkout with live order-status polling
 - **Accounts** — register / sign in against the live API, with tokens stored securely in the Keychain
 - **My bookings** — track requested and confirmed dining experiences
 
@@ -44,21 +46,22 @@ home-cooked dining experiences.
 | Networking | `async`/`await` `URLSession`, `Codable`, typed `APIError` |
 | Auth | JWT access/refresh tokens persisted in the **Keychain** |
 | State | `ObservableObject` view models per screen |
-| Project gen | [XcodeGen](https://github.com/yonyz/XcodeGen) (`project.yml`) |
-| Backend | Potluck REST API — `https://api.potluckhub.io/api/v1` |
+| Project gen | [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`project.yml`) |
+| Backend | Potluck REST API — `https://api.potluckhub.io/api/v1` (catalog/auth) + `https://potluckhub.io/api` (checkout & reviews, shared with the website and Android app) |
 
 ## Architecture
 
 ```
 Potluck/
 ├── App/            # @main entry, Theme (brand palette), RootView (tabs)
-├── Networking/     # APIClient, PotluckService (endpoints), Codable Models
+├── Networking/     # APIClient, PotluckService, CheckoutService, ReviewsService, Models
 ├── Auth/           # AuthManager (session) + Keychain wrapper
 ├── Components/     # Reusable views (RemoteImage, RatingLabel, Pill, states…)
 └── Features/
     ├── Explore/    # Chef discovery + chef detail
     ├── Dishes/     # Menu grid + dish detail
-    ├── Booking/    # Booking request sheet
+    ├── Booking/    # Booking + payment sheet (Stripe / PayPal / HitPay)
+    ├── Reviews/    # Write-a-review sheet
     ├── Bookings/   # My bookings
     └── Profile/    # Auth sheet + profile
 ```
@@ -69,7 +72,7 @@ as strings and sometimes as numbers — a `FlexNumber` decoder handles both.
 
 ## Getting Started
 
-Requires **Xcode 16+** and [XcodeGen](https://github.com/yonyz/XcodeGen) (`brew install xcodegen`).
+Requires **Xcode 16+** and [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`).
 
 ```bash
 # Generate the Xcode project from project.yml
@@ -99,7 +102,7 @@ xcrun altool --upload-app -f build/export/Potluck.ipa -t ios \
 ```
 
 - **Bundle ID:** `io.potluckhub.app`
-- **Version:** 1.0
+- **Version:** 1.3 (build 20260703)
 
 ## License
 

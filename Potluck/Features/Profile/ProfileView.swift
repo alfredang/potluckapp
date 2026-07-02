@@ -60,7 +60,7 @@ struct ProfileView: View {
             VStack(spacing: 0) {
                 settingsRow("heart", "Saved Chefs")
                 Divider().padding(.leading, 52)
-                settingsRow("creditcard", "Payment Methods")
+                paymentsInfoRow
                 Divider().padding(.leading, 52)
                 settingsRow("bell", "Notifications")
                 Divider().padding(.leading, 52)
@@ -90,7 +90,7 @@ struct ProfileView: View {
             Text("Permanently deletes your account and data.")
                 .font(.caption2).foregroundStyle(Theme.mutedInk)
 
-            Text("Potluck v1.0").font(.caption2).foregroundStyle(Theme.mutedInk).padding(.top, 8)
+            Text("Potluck v\(appVersion)").font(.caption2).foregroundStyle(Theme.mutedInk).padding(.top, 8)
         }
         .padding(.bottom, 32)
     }
@@ -131,6 +131,24 @@ struct ProfileView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 0)
+        }
+        .padding(16)
+    }
+
+    private var appVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+    }
+
+    /// Informational row — payment happens per-booking at checkout, so there is
+    /// no stored payment method to manage.
+    private var paymentsInfoRow: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "creditcard").foregroundStyle(Theme.teal).frame(width: 24)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Payments").font(.subheadline)
+                Text("Card, PayPal & PayNow at checkout").font(.caption).foregroundStyle(Theme.mutedInk)
+            }
+            Spacer()
         }
         .padding(16)
     }

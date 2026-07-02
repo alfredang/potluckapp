@@ -92,9 +92,17 @@ struct DishDetailView: View {
     let menu: Menu
     @State private var full: Menu?
     @State private var reviews: [Review] = []
+    @State private var reviewTotal = 0
+    @State private var reviewAverage: Double = 0
     @State private var showBooking = false
 
     private var m: Menu { full ?? menu }
+
+    /// Share sheet text — dish + chef + site link.
+    private var shareText: String {
+        let chefName = m.chef?.user?.fullName ?? "a home chef"
+        return "\(m.name) by \(chefName) on Potluck 🍲 https://potluckhub.io"
+    }
 
     var body: some View {
         ScrollView {
@@ -129,7 +137,7 @@ struct DishDetailView: View {
                         HStack {
                             Text("Diner reviews").font(.headline).foregroundStyle(Theme.ink)
                             Spacer()
-                            RatingLabel(rating: m.rating, count: reviews.count)
+                            RatingLabel(rating: reviewAverage > 0 ? reviewAverage : m.rating, count: reviewTotal)
                         }
                         VStack(spacing: 12) {
                             ForEach(reviews.prefix(5)) { ReviewCard(review: $0, showMenuName: false) }
@@ -145,11 +153,22 @@ struct DishDetailView: View {
             BookingBar(price: m.displayPrice, title: "Request This Dish") { showBooking = true }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                ShareLink(item: shareText) {
+                    Image(systemName: "square.and.arrow.up")
+                }
+            }
+        }
         .task {
             full = try? await PotluckService.menu(id: menu.id)
-            if let chefId = m.chefId ?? m.chef?.id {
-                let all = (try? await PotluckService.chefReviews(chefId: chefId)) ?? []
-                reviews = all.filter { $0.menu?.id == menu.id }
+            // Reviews come from the potluckhub.io website API (chef-level; the web
+            // reviews model has no per-menu link).
+            if let chefId = m.chefId ?? m.chef?.id,
+               let response = try? await ReviewsService.reviews(chefId: chefId) {
+                reviews = response.reviews.map(\.asReview)
+                reviewTotal = response.total
+                reviewAverage = response.average
             }
         }
         .sheet(isPresented: $showBooking) {
